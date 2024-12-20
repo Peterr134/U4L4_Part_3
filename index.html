@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Visualize an array</title>
+</head>
+<body>    
+    <div>
+      <canvas id="myChart"></canvas>
+    </div>
+
+    <script>
+      const ctx = document.getElementById('myChart');
+      let yearArr = [];
+      let reportsArr = [];
+
+      async function getData() {
+        console.log("getData() started");
+        let count = 0;
+        let previousDate = "";
+        const response = await fetch("reports.csv");
+        const data = await response.text();
+        const rows = data.split("\n").slice(1);
+
+        rows.forEach((elem) => {
+            const row = elem.split(",");
+            if (row.length > 1) {
+            const dateTime = row[1];
+            const date = dateTime.split(" ")[0];
+
+            if (previousDate === date || previousDate === "") {
+                count++;
+            } else {
+                reportsArr.push(count);
+                yearArr.push(previousDate);
+                count = 0;
+            }
+            previousDate = date;
+            }
+        });
+
+        if (previousDate !== "") {
+            reportsArr.push(count);
+            yearArr.push(previousDate);
+        }
+
+        console.log("Data fetched successfully:");
+        console.log("yearArr:", yearArr);
+        console.log("reportsArr:", reportsArr);
+
+        
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: yearArr,
+            datasets: [{
+              label: 'Noise Complaints In Brooklyn (December 2024)',
+              data: reportsArr,
+              borderWidth: 1
+            }]
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: false
+              }
+            }
+          }
+        });
+      }
+      
+      getData();
+    </script>
+ </body>
+</html>
